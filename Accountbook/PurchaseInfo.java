@@ -1,21 +1,21 @@
 package Accountbook;
 
 public class PurchaseInfo {
-    private int code;
+    private Code code;
     private String usage;
     private int amountOfPayment;
 
-    PurchaseInfo(int code, String usage, int amountOfPayment) {
+    PurchaseInfo(Code code, String usage, int amountOfPayment) {
         this.code = code;
         this.usage = usage;
         this.amountOfPayment = amountOfPayment;
     }
 
-    public void setCode(int code) {
+    public void setCode(Code code) {
         this.code = code;
     }
 
-    public int getCode() {
+    public Code getCode() {
         return code;
     }
 

@@ -1,98 +1,48 @@
 package Accountbook;
 
 import java.io.*;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 import static java.lang.System.exit;
 
 public class Methods {
 
-    private List<String> splitWord(String str) {
+    public int[] sumAverage(List<PurchaseInfo> listp) {
 
-        return Arrays.asList(str.split(" "));
+        int n[] = {0, 0};
+        int count = 0;
 
-    }   //문자열을 " " 단위로 잘라서 리스트에 넣는 메소드
-
-    private int discrimination(List<String> values) {
-        int code = 0;
-
-        try {
-            if (values.get(0).contains("Web발신")) {
-                if (values.get(1).contains("국민")) {
-                    code = 1;
-                } else {
-                    System.out.println("카드가 아닙니다");
-                    code = 0;
-                }
-            } else if (values.get(0).contains("신한")) {
-                code = 2;
-            } else if (values.get(0).contains("현대")) {
-                code = 3;
-            } else {
-                System.out.println("카드가 아닙니다");
-                code = 0;
-            }
-        } catch (IndexOutOfBoundsException e) {
-            System.err.println(e);
-            exit(2);
+        for (PurchaseInfo p : listp) {
+            n[0] = n[0] + p.getAmountOfPayment();
+            count++;
         }
-        return code;
+        n[1] = (count > 0) ? n[0] / count : 0;
 
-    }   //첫번째 문자열을 판별하여 카드사의 종류를 파악하는 메소드. 국민카드 1, 신한카드 2, 현대카드 3을 반환.
+        return n;
 
+    }
 
-    public PurchaseInfo searching(String text) {
+    public int[] sumAverage(List<PurchaseInfo> listp, int code) {
+        int n[] = {0, 0};
+        int count = 0;
 
-        int code = -1;
-        String usage = "";
-        int amountOfPayment = 0;
-
-        List<String> spiltText = splitWord(text);
-        try {
-            code = discrimination(spiltText);
-            switch (code) {
-                case 1:
-                    for (int i = 6; i < spiltText.size() - 1; i++) {
-                        usage = usage.concat(spiltText.get(i));
-                    }
-                    amountOfPayment = Integer.parseInt(spiltText.get(5).replaceAll("[^0-9]", ""));
-                    break;
-                case 2:
-                    if (spiltText.get(0).contains("체크")) {
-                        amountOfPayment = Integer.parseInt(spiltText.get(3).replaceAll("[^0-9]", ""));
-                        for (int i = 4; i < spiltText.size() - 1; i++) {
-                            usage = usage.concat(spiltText.get(i));
-                        }
-                    } else {
-                        amountOfPayment = Integer.parseInt(spiltText.get(4).replaceAll("[^0-9]", ""));
-                        for (int i = 5; i < spiltText.size() - 1; i++) {
-                            usage = usage.concat(spiltText.get(i));
-                        }
-                    }
-                    break;
-                case 3:
-                    for (int i = 3; i < spiltText.size() - 1; i++) {
-                        usage = usage.concat(spiltText.get(i));
-                    }
-                    amountOfPayment = Integer.parseInt(spiltText.get(2).replaceAll("[^0-9]", ""));
-                    break;
-                default:
-                    System.out.println("카드사 문자가 아님 처리 필요");
-
+        for (PurchaseInfo p : listp) {
+            if (p.getCode() == code) {
+                n[0] = n[0] + p.getAmountOfPayment();
+                count++;
             }
-        } catch (IndexOutOfBoundsException e) {
-            System.err.println(e);
-            exit(2);
         }
-        return new PurchaseInfo(code, usage, amountOfPayment);
-    }   //잘라진 문자열을 이용해서 카드사, 사용처, 사용금액을 추출해내는 매소드
+        n[1] = (count > 0) ? n[0] / count : 0;
 
-    public void fileRead(String filename, List<PurchaseInfo> listOfPurchase) {
+        return n;
 
-        filename = AccountBookMain.class.getResource("").getPath() + filename;
+    }
 
-        //String totalText = "";
+    public ArrayList<CardInfo> getCardInfo() {
+
+        ArrayList<CardInfo> cardInfo = new ArrayList<>();
+        String filename = AccountBookMain.class.getResource("").getPath() + "cardInfo.txt";
+
 
         try {
             BufferedReader in = new BufferedReader(new FileReader(filename));
@@ -100,8 +50,64 @@ public class Methods {
 
             while ((fileContent = in.readLine()) != null) {
 
-                listOfPurchase.add(searching(fileContent));
-                //totalText = totalText.concat(fileContent);
+                String[] split = fileContent.split(" ");
+                CardInfo temp = new CardInfo();
+                temp.setCardcheck(split[0]);
+                temp.setMoneyLocation(Integer.valueOf(split[1]));
+                temp.setUsageLocationS(Integer.valueOf(split[2]));
+                temp.setUsageLocationF(Integer.valueOf(split[3]));
+                temp.setCode(Integer.valueOf(split[4]));
+                cardInfo.add(temp);
+            }
+
+            in.close();
+        } catch (IOException e) {
+            System.err.println(e);
+            exit(1);
+        }
+        return cardInfo;
+    }
+
+    private List<String> splitWord(String str) {
+
+        return Arrays.asList(str.split(" "));
+
+    }   //문자열을 " " 단위로 잘라서 리스트에 넣는 메소드
+
+    private PurchaseInfo distinguish(String text) {
+
+        ArrayList<CardInfo> test = getCardInfo();
+
+        int code = 0;
+        String usage = "";
+        int amountOfPayment = 0;
+
+        List<String> splitText = splitWord(text); //todo list로 사용하는게 더 좋은가?
+
+        for (CardInfo a : test) {
+            if (text.contains(a.getCardcheck())) {
+                code = a.getCode();
+                amountOfPayment = Integer.parseInt(splitText.get(a.getMoneyLocation()).replaceAll("[^0-9]", ""));
+                for (int i = a.getUsageLocationS(); i < splitText.size() - a.getUsageLocationF(); i++) {
+                    usage = usage.concat(splitText.get(i));
+                }
+            }
+        }
+        return new PurchaseInfo(code, usage, amountOfPayment);
+    }
+
+    public void fileRead(String filename, List<PurchaseInfo> listOfPurchase) {
+
+        filename = AccountBookMain.class.getResource("").getPath() + filename;
+
+
+        try {
+            BufferedReader in = new BufferedReader(new FileReader(filename));
+            String fileContent;
+
+            while ((fileContent = in.readLine()) != null) {
+
+                listOfPurchase.add(distinguish(fileContent));
             }
 
             in.close();
@@ -112,50 +118,31 @@ public class Methods {
     }
 
     public void fileWrite(List<PurchaseInfo> listOfPurchase) {
-        int sum = 0;
-        int sumKookmin = 0;
-        int sumShinhan = 0;
-        int sumHyundai = 0;
-        int count = 0;
-        int countKookmin = 0;
-        int countShinhan = 0;
-        int countHyundai = 0;
 
         try {
             BufferedWriter out = new BufferedWriter(new FileWriter(AccountBookMain.class.getResource("").getPath().concat("outfile.txt")));
             out.write(String.format("%10s%10s%10s", "은행코드", "사용처", "사용금액\n"));
 
-            for (int i = 0; i < listOfPurchase.size(); i++) {
-                PurchaseInfo p = listOfPurchase.get(i);
+            for (PurchaseInfo p : listOfPurchase) {
 
-                sum = sum + p.getAmountOfPayment();
-                count++;
-
-                switch( p.getCode() ) {
-                    case 1:
-                        sumKookmin = sumKookmin + p.getAmountOfPayment();
-                        countKookmin++;
-                        break;
-
-                    case 2:
-                        sumShinhan = sumShinhan + p.getAmountOfPayment();
-                        countShinhan++;
-                        break;
-
-                    case 3:
-                        sumHyundai = sumHyundai + p.getAmountOfPayment();
-                        countHyundai++;
-                        break;
-                    default:
-                        break;
-                }
                 out.write(String.format("%10s%10s%10s\n", p.getCode(), p.getUsage(), p.getAmountOfPayment()));
+
+//                if (map.containsKey(p.getCode())) {
+//                    map.put(p.getCode(), map.get(p.getCode()).countAndAdd(p.getAmountOfPayment()));
+//                } else {
+//                    map.put(p.getCode(), new sumAverageOfEachBank(p.getAmountOfPayment(), 1));
+//                }
+
+
             }
 
-            out.write("전체 합계: " + sum + ", 전체 평균: " + ((count > 0) ? sum / count : 0) + "\n");
-            out.write("국민카드 합계: " + sumKookmin + ", 국민카드 평균: " + ((countKookmin > 0) ? sumKookmin / countKookmin : 0) + "\n");
-            out.write("신한카드 합계: " + sumShinhan + ", 신한카드 평균: " + ((countShinhan > 0) ? sumShinhan / countShinhan : 0) + "\n");
-            out.write("현대카드 합계: " + sumHyundai + ", 현대카드 평균: " + ((countHyundai > 0) ? sumHyundai / countHyundai : 0) + "\n");
+            out.write("전체 합계: " + sumAverage(listOfPurchase)[0] + ", 전채 평균: " + sumAverage(listOfPurchase)[1] + "\n");
+
+            for (int i = 1; i < 4; i++) { //todo enum 완료되면 map 이용 ??
+                out.write(i + "의 합계: " + sumAverage(listOfPurchase, i)[0] + ", " + i + "의 평균: " + sumAverage(listOfPurchase, i)[1] + "\n");
+            }//todo 동적 enum 완료전까지 임시로 숫자로 code.
+
+
             out.close();
         } catch (IOException e) {
             System.err.println(e);

@@ -1,12 +1,13 @@
 package Accountbook;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class AccountBookMain {
 
     public static void main(String[] args) {
 
-        ArrayList<PurchaseInfo> listOfPurchase = new ArrayList();
+        List<PurchaseInfo> listOfPurchase = new ArrayList<>();
 
         Methods methods = new Methods();
 
