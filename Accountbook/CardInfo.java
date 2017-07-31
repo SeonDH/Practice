@@ -13,13 +13,13 @@ public class CardInfo {
         this("",0,0,0,0);
     }
 
+    // seon
     CardInfo (String cartcheck, int moneyLocation, int usageLocationS, int usageLocationF, int code){
         this.cardcheck = cardcheck;
         this.moneyLocation = moneyLocation;
         this.usageLocationS = usageLocationS;
         this.usageLocationF = usageLocationF;
         this.code = code;
-
     }
 
     public void setCardcheck(String cardcheck) {
